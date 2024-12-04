@@ -1,0 +1,60 @@
+service:
+  url:
+    user: http://localhost:8080/user
+    marketing: http://localhost:8083/marketing
+
+server:
+  port: 8084
+  servlet:
+    context-path: /payment
+  max-http-request-header-size: 8MB
+  tomcat:
+    threads:
+      max: 200       # Số luồng xử lý tối đa
+      min-spare: 10  # Số luồng dự phòng tối thiểu
+    max-connections: 10000  # Số lượng kết nối tối đa
+    connection-timeout: 20000  # Thời gian chờ kết nối tối đa (20 giây)
+    max-keep-alive-requests: 100  # Số yêu cầu tối đa trên mỗi kết nối
+    accept-count: 1000  # Số lượng yêu cầu tối đa trong hàng đợi
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  jackson:
+    serialization:
+      indent-output: true
+      write-dates-as-timestamps: true
+  servlet:
+    multipart:
+      max-file-size: 50MB
+      max-request-size: 50MB
+      enabled: true
+  web:
+    servlet:
+      session:
+        timeout: 30m  # Thời gian chờ của session
+  data:
+    mongodb:
+      uri: mongodb+srv://${MONGODB_USERNAME}:${MONGODB_PASSWORD}@${MONGODB_CLUSTER}/${MONGODB_DATABASE}?retryWrites=true&w=majority&appName=Cluster0
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+
+feign:
+  client:
+    config:
+      default:
+        connectTimeout: 30000
+        readTimeout: 30000
+  hystrix:
+    enabled: false
+  okhttp:
+    enabled: true
+
+logging:
+  level:
+    root: debug
+    org.apache: DEBUG
+    org.springframework: DEBUG
+
