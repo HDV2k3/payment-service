@@ -1,5 +1,6 @@
 package com.example.payment.configuration.security;
 
+import com.example.payment.configuration.momo.MoMoSecurity;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
@@ -25,7 +26,8 @@ public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui/**",
             "/api-docs/**",
-
+            "/vnPay/**",
+            "/momo/**"
     };
 
     // Custom JWT decoder for handling token validation and extraction
@@ -116,5 +118,9 @@ public class SecurityConfig {
 
         // Return a new CorsFilter with the configuration source
         return new CorsFilter(urlBasedCorsConfigurationSource);
+    }
+    @Bean
+    public MoMoSecurity moMoSecurity() {
+        return new MoMoSecurity();
     }
 }

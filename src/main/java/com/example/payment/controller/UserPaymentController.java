@@ -5,7 +5,6 @@ import com.example.payment.controller.dto.reponse.UserPaymentResponse;
 import com.example.payment.controller.dto.request.UserPaymentRequest;
 import com.example.payment.facade.UserPaymentFacade;
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import lombok.AccessLevel;
@@ -23,16 +22,22 @@ import org.springframework.web.bind.annotation.*;
 @SecurityRequirement(name = "BearerAuth") // Áp dụng xác thực token
 public class UserPaymentController {
     UserPaymentFacade userPaymentFacade;
-
+    @Operation(
+            summary = "Lấy cap nhap  thanh toán của người dùng",
+            description = "API này trả về thông tin thanh toán hiện tại của người dùng.",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    @PutMapping("/update")
+    public GenericApiResponse<UserPaymentResponse> updateUserPayment(UserPaymentRequest request)
+    {
+        return GenericApiResponse.success(userPaymentFacade.updateUserPayment(request));
+    }
     @Operation(
             summary = "Tạo mới thông tin thanh toán của người dùng",
             description = "API này tạo mới thông tin thanh toán cho một người dùng dựa trên request.",
             security = {@SecurityRequirement(name = "bearerAuth")})
-    @PostMapping("/create")
-    public GenericApiResponse<UserPaymentResponse> created(
-            @Parameter(description = "Thông tin yêu cầu thanh toán của người dùng", required = true)
-            @RequestBody UserPaymentRequest request) {
-        var userPayment = userPaymentFacade.created(request);
+    @GetMapping("/create")
+    public GenericApiResponse<UserPaymentResponse> created() {
+        var userPayment = userPaymentFacade.created();
         return GenericApiResponse.success(userPayment);
     }
 
@@ -44,4 +49,5 @@ public class UserPaymentController {
     public GenericApiResponse<UserPaymentResponse> getUserPayment() {
         return GenericApiResponse.success(userPaymentFacade.getUserPayment());
     }
+
 }

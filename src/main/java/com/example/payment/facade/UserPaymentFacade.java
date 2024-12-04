@@ -14,13 +14,16 @@ import org.springframework.stereotype.Service;
 public class UserPaymentFacade {
 
     UserPaymentService userPaymentService;
-    public UserPaymentResponse created(UserPaymentRequest request)
-    {
-        return userPaymentService.created(request);
+
+    public UserPaymentResponse created() {
+        return userPaymentService.created();
     }
 
-    public UserPaymentResponse getUserPayment()
-    {
+    public UserPaymentResponse getUserPayment() {
         return userPaymentService.getUserPayment();
+    }
+
+    public UserPaymentResponse updateUserPayment(UserPaymentRequest request) {
+        return userPaymentService.updateUserPayment(request);
     }
 }
