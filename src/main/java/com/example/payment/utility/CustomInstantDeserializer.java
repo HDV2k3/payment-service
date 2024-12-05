@@ -14,7 +14,6 @@ import java.util.List;
 
 public class CustomInstantDeserializer extends JsonDeserializer<Instant> {
 
-    // Danh sách các format date có thể xử lý
     private static final List<DateTimeFormatter> FORMATTERS = Arrays.asList(
             DateTimeFormatter.ISO_INSTANT,                    // 2024-11-16T03:35:25.642Z
             DateTimeFormatter.ISO_DATE_TIME,                 // 2024-11-16T03:35:25

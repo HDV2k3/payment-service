@@ -23,7 +23,6 @@ public class OrderEntity extends BaseEntity{
     private Double amount;
     private Integer userId;
     private String status;
-    private String token;
     @PostConstruct
     public void initializeCreationDetails() {
         Instant now = Instant.now();

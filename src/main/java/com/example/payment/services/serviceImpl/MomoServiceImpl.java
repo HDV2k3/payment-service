@@ -33,7 +33,7 @@ public class MomoServiceImpl implements MomoService {
     UserPaymentRepository userPaymentRepository;
 
     @Override
-    public String paymentWithMomo(String amount, String token) {
+    public String paymentWithMomo(String amount) {
         try {
             // Prepare request data
             String endpoint = EnvConfig.get("MOMO_ENDPOINT");
@@ -59,7 +59,7 @@ public class MomoServiceImpl implements MomoService {
             String responseFromMomo = sendPaymentRequest(endpoint, requestBody.toString());
 
             // Handle and parse the response
-            return processMomoResponse(responseFromMomo, amount, token, orderId);
+            return processMomoResponse(responseFromMomo, amount, orderId);
 
         } catch (Exception e) {
             log.error("Error initiating MoMo payment: {}", e.getMessage(), e);
@@ -98,13 +98,13 @@ public class MomoServiceImpl implements MomoService {
         return requestBody;
     }
 
-    private String processMomoResponse(String responseFromMomo, String amount, String token, String orderId) {
+    private String processMomoResponse(String responseFromMomo, String amount, String orderId) {
         JSONObject response = new JSONObject(responseFromMomo);
 
         if (response.has("payUrl")) {
             String payUrl = response.getString("payUrl");
 
-            saveOrderToDatabase(amount, token, orderId);
+            saveOrderToDatabase(amount, orderId);
 
             return payUrl;
         } else {
@@ -112,15 +112,13 @@ public class MomoServiceImpl implements MomoService {
         }
     }
 
-    private void saveOrderToDatabase(String amount, String token, String orderId) {
+    private void saveOrderToDatabase(String amount, String orderId) {
         OrderEntity order = new OrderEntity();
         order.setTransactionToken(""); // Adjust as needed
         order.setOrderIdMomo(orderId);
         order.setMethod("MOMO");
         order.setAmount(Double.valueOf(amount));
         order.setStatus("SUCCESS");
-        order.setToken(token);
-
         var user = userRepository.getMyInfo();
         order.setUserId(user.getId());
         orderRepository.save(order);
@@ -132,7 +130,7 @@ public class MomoServiceImpl implements MomoService {
         var userPayment = userPaymentRepository.findByUserId(userId)
                 .orElseThrow(() -> new RuntimeException("User payment record not found"));
 
-        userPayment.setBalance(userPayment.getBalance() + Double.valueOf(amount));
+        userPayment.setBalance(userPayment.getBalance() + Double.parseDouble(amount));
         userPaymentRepository.save(userPayment);
     }
 

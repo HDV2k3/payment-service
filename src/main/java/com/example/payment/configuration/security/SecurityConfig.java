@@ -27,8 +27,6 @@ public class SecurityConfig {
     private static final String[] PUBLIC_ENDPOINTS = {
             "/swagger-ui/**",
             "/api-docs/**",
-            "/vnPay/**",
-            "/momo/**"
     };
 
     // Custom JWT decoder for handling token validation and extraction

@@ -1,6 +1,7 @@
 
 package com.example.payment.controller;
 
+import com.example.payment.configuration.EnvConfig;
 import com.example.payment.controller.dto.reponse.GenericApiResponse;
 import com.example.payment.services.UserPaymentService;
 import com.example.payment.services.VNPayService;
@@ -9,6 +10,7 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpSession;
@@ -25,13 +27,14 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class VNPayController {
-
     VNPayService vnPayService;
     UserPaymentService userPaymentService; // Inject UserPaymentService để cập nhật balance
-
+    private static final  String BASE_URL = EnvConfig.get("BASE_URL");
+    private static final String SUCCESS = EnvConfig.get("SUCCESS");
     @Operation(
             summary = "Tạo đơn hàng VNPay",
             description = "API này tạo một đơn hàng mới với thông tin đơn hàng và số tiền được cung cấp, và trả về URL để thanh toán trên VNPay."
+            , security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "URL thanh toán thành công",
@@ -44,18 +47,9 @@ public class VNPayController {
     @PostMapping("/submitOrder")
     public GenericApiResponse<String> submitOrder(
             @RequestParam("amount") int orderTotal,
-            @RequestParam("orderInfo") String orderInfo,
-            @RequestParam("token") String token,
             HttpServletRequest request) {
         try {
-            // Lưu số tiền vào session trước khi tạo URL thanh toán
-            HttpSession session = request.getSession();
-
-            session.setAttribute("Authorization", token);
-
-
-            String baseUrl = request.getScheme() + "://" + request.getServerName() + ":" + request.getServerPort();
-            String vnpayUrl = vnPayService.createOrder(request,token, orderTotal, orderInfo, baseUrl);
+            String vnpayUrl = vnPayService.createOrder(request, orderTotal,  BASE_URL);
 
             return GenericApiResponse.success(vnpayUrl);
         } catch (Exception e) {
@@ -67,7 +61,7 @@ public class VNPayController {
     @Operation(
             summary = "Xử lý kết quả thanh toán từ VNPay",
             description = "API này xử lý phản hồi từ VNPay sau khi thanh toán, trả về trạng thái thanh toán."
-
+    , security = {@SecurityRequirement(name = "bearerAuth")}
     )
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Xử lý thành công trạng thái thanh toán",
@@ -80,17 +74,12 @@ public class VNPayController {
     @GetMapping("/vnpay-payment-return")
     public GenericApiResponse<String> paymentReturn(HttpServletRequest request) {
         try {
-
             String transactionToken = request.getParameter("vnp_TxnRef");
-            int paymentStatus = vnPayService.orderReturn(request);
-            String message = paymentStatus == 1 ? "Payment completed successfully" : "Payment failed";
-
-            if (paymentStatus == 1) {
-
+            String paymentStatus = vnPayService.orderReturn(request);
+            if (paymentStatus.equals(SUCCESS)) {
                 userPaymentService.updateUserBalance(transactionToken);
-
             }
-            return GenericApiResponse.success(message);
+            return GenericApiResponse.success(paymentStatus);
         } catch (Exception e) {
             log.error("Error processing payment return: ", e);
             return GenericApiResponse.error("Failed to process payment return");

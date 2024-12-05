@@ -102,14 +102,12 @@ public class UserPaymentServiceImpl implements UserPaymentService {
                 () -> new AppException(ErrorCode.ROOM_NOT_FOUND)
         );
         if (orderVNPay != null) {
-
             Double amount = orderVNPay.getAmount();
             userPayment = updateBalance(userPayment, amount);
             var savedUserPayment = userPaymentRepository.save(userPayment);
 
             if (savedUserPayment != null) {
                 orderVNPay.setStatus("SUCCESS");
-                orderVNPay.setToken("");
                 orderRepository.save(orderVNPay);
             }
         }

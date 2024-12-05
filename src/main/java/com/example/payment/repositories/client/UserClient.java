@@ -1,5 +1,5 @@
 package com.example.payment.repositories.client;
-import com.example.payment.configuration.security.AuthenticationRequestInterceptor;
+    import com.example.payment.configuration.security.AuthenticationRequestInterceptor;
 import com.example.payment.controller.dto.reponse.GenericApiResponse;
 import com.example.payment.repositories.client.model.response.UserResponse;
 import org.springframework.cloud.openfeign.FeignClient;

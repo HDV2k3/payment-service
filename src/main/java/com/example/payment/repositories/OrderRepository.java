@@ -8,6 +8,5 @@ import java.util.Optional;
 
 public interface OrderRepository extends MongoRepository<OrderEntity, String> {
     Optional<OrderEntity> findByTransactionToken(String transactionToken);
-    Optional<OrderEntity> findByOrderIdMomo(String orderIdMomo);
     Page<OrderEntity> findAllByUserId(int userId, Pageable pageable);
 }

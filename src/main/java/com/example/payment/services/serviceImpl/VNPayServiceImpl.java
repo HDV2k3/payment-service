@@ -1,4 +1,5 @@
 package com.example.payment.services.serviceImpl;
+import com.example.payment.configuration.EnvConfig;
 import com.example.payment.configuration.VNPAYConfig;
 import com.example.payment.repositories.OrderRepository;
 import com.example.payment.repositories.UserRepository;
@@ -8,7 +9,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import java.io.UnsupportedEncodingException;
+
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
@@ -27,24 +28,23 @@ public class VNPayServiceImpl implements VNPayService {
     private static final String ORDER_TYPE = "order-type";
     private static final String LOCALE = "vn";
     private static final int EXPIRATION_MINUTES = 15;
+    private static final String SUCCESS = EnvConfig.get("SUCCESS");
+    private static final String ERROR = EnvConfig.get("ERROR");
+    private static final String ORDER_INFO = EnvConfig.get("ORDER_INFO");
 
     @Override
-    public String createOrder(HttpServletRequest request, String token, int amount, String orderInfo, String returnUrl) {
+    public String createOrder(HttpServletRequest request, int amount,  String returnUrl) {
         // Generate order and save it to the database
         String transactionRef = VNPAYConfig.getRandomNumber(8);
-        OrderEntity order = createAndSaveOrder(token, amount, transactionRef);
-
+        createAndSaveOrder( amount, transactionRef);
         // Build VNPAY parameters
-        Map<String, String> vnpParams = buildVnpParams(request, transactionRef, amount, orderInfo, returnUrl);
-
+        Map<String, String> vnpParams = buildVnpParams(request, transactionRef, amount, returnUrl);
         // Generate the secure hash and payment URL
-        String paymentUrl = buildPaymentUrl(vnpParams);
-
-        return paymentUrl;
+        return buildPaymentUrl(vnpParams);
     }
 
     @Override
-    public int orderReturn(HttpServletRequest request) {
+    public String orderReturn(HttpServletRequest request) {
         Map<String, String> fields = extractRequestParams(request);
 
         // Validate the secure hash
@@ -54,32 +54,28 @@ public class VNPayServiceImpl implements VNPayService {
         String calculatedHash = VNPAYConfig.hashAllFields(fields);
 
         if (!calculatedHash.equals(vnpSecureHash)) {
-            return -1; // Invalid signature
+            return ERROR; // Invalid signature
         }
 
         // Check transaction status
         String transactionStatus = request.getParameter("vnp_TransactionStatus");
-        return "00".equals(transactionStatus) ? 1 : 0; // 1 = Success, 0 = Failure
+        return "00".equals(transactionStatus) ? SUCCESS : ERROR; // 1 = Success, 0 = Failure
     }
 
-    private OrderEntity createAndSaveOrder(String token, int amount, String transactionRef) {
+    private void createAndSaveOrder(int amount, String transactionRef) {
         OrderEntity order = new OrderEntity();
         order.setTransactionToken(transactionRef);
+        order.setOrderIdMomo("");
         order.setMethod("VNPAY");
         order.setAmount((double) amount);
         order.setStatus("PENDING");
-        order.setToken(token);
-        orderRepository.save(order);
-
-        // Retrieve and associate the user
         var user = userRepository.getMyInfo();
         order.setUserId(user.getId());
         orderRepository.save(order);
 
-        return order;
     }
 
-    private Map<String, String> buildVnpParams(HttpServletRequest request, String transactionRef, int amount, String orderInfo, String returnUrl) {
+    private Map<String, String> buildVnpParams(HttpServletRequest request, String transactionRef, int amount, String returnUrl) {
         Map<String, String> vnpParams = new HashMap<>();
         vnpParams.put("vnp_Version", VNP_VERSION);
         vnpParams.put("vnp_Command", VNP_COMMAND);
@@ -87,7 +83,7 @@ public class VNPayServiceImpl implements VNPayService {
         vnpParams.put("vnp_Amount", String.valueOf(amount * 100));
         vnpParams.put("vnp_CurrCode", VNP_CURRENCY_CODE);
         vnpParams.put("vnp_TxnRef", transactionRef);
-        vnpParams.put("vnp_OrderInfo", orderInfo);
+        vnpParams.put("vnp_OrderInfo",ORDER_INFO);
         vnpParams.put("vnp_OrderType", ORDER_TYPE);
         vnpParams.put("vnp_Locale", LOCALE);
 
@@ -118,13 +114,9 @@ public class VNPayServiceImpl implements VNPayService {
         for (String fieldName : fieldNames) {
             String fieldValue = vnpParams.get(fieldName);
             if (fieldValue != null && !fieldValue.isEmpty()) {
-                try {
-                    hashData.append(fieldName).append("=").append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString())).append("&");
-                    query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII.toString())).append("=")
-                            .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII.toString())).append("&");
-                } catch (UnsupportedEncodingException e) {
-                    log.error("Error encoding field: {}", fieldName, e);
-                }
+                hashData.append(fieldName).append("=").append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII)).append("&");
+                query.append(URLEncoder.encode(fieldName, StandardCharsets.US_ASCII)).append("=")
+                        .append(URLEncoder.encode(fieldValue, StandardCharsets.US_ASCII)).append("&");
             }
         }
 
