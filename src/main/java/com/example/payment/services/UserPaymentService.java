@@ -8,5 +8,5 @@ public interface UserPaymentService {
     UserPaymentResponse created();
     UserPaymentResponse getUserPayment();
     UserPaymentResponse updateUserPayment(UserPaymentRequest request);
-    UserPaymentEntity updateUserBalance(Double amount);
+    UserPaymentEntity updateUserBalance(String token);
 }

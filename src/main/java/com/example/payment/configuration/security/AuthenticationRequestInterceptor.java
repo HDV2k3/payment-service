@@ -1,7 +1,9 @@
 package com.example.payment.configuration.security;
 
+import com.example.payment.repositories.OrderRepository;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
+import jakarta.servlet.http.HttpSession;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
@@ -13,39 +15,87 @@ import org.springframework.web.context.request.ServletRequestAttributes;
  * the current request's Authorization header and passes it along in the Feign request.
  * This ensures the token-based authentication is propagated in downstream requests.
  */
+
 @Slf4j
 @Component
 public class AuthenticationRequestInterceptor implements RequestInterceptor {
+    private final OrderRepository orderRepository;  // Inject OrderRepository to retrieve token from OrderEntity
 
-    /**
-     * Intercepts the Feign request to inject the Authorization header from the current HTTP request.
-     *
-     * @param requestTemplate The Feign request template to which the Authorization header will be added.
-     */
+    public AuthenticationRequestInterceptor(OrderRepository orderRepository) {
+        this.orderRepository = orderRepository;  // Initialize the repository
+    }
     @Override
     public void apply(RequestTemplate requestTemplate) {
-        // Retrieve current request attributes
+        // Lấy các thuộc tính yêu cầu từ RequestContextHolder
         ServletRequestAttributes servletRequestAttributes =
                 (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
 
-        // Ensure the servletRequestAttributes is not null
+        String authHeader = null;
+
         if (servletRequestAttributes != null) {
-            String authHeader = servletRequestAttributes.getRequest().getHeader("Authorization");
+            // Lấy Authorization header từ request hiện tại
+            authHeader = servletRequestAttributes.getRequest().getHeader("Authorization");
+            log.info("Authorization Header from request: {}", authHeader);
+        }
 
-            // Log the extracted header for debugging purposes
-            log.info("Authorization Header: {}", authHeader);
-
-            if (StringUtils.hasText(authHeader)) {
-                // Strip 'Bearer ' prefix if it exists
-                if (authHeader.startsWith("Bearer ")) {
-                    authHeader = authHeader.substring(7);
-                    log.info("Authorization Header final: {}", authHeader);
-
+        // Nếu không có Authorization header trong request, thử lấy từ session
+        if (!StringUtils.hasText(authHeader)) {
+            try {
+                if (servletRequestAttributes != null) {
+                    // Lấy session hiện tại
+                    HttpSession session = servletRequestAttributes.getRequest().getSession(false);
+                    if (session != null) {
+                        authHeader = (String) session.getAttribute("Authorization");
+                        log.info("Authorization Header from session: {}", authHeader);
+                    }
                 }
-
-                // Add 'Bearer ' prefix to the token before sending it in the Feign request
-                requestTemplate.header("Authorization", "Bearer " + authHeader);
+            } catch (Exception e) {
+                log.warn("Failed to retrieve Authorization header from session: {}", e.getMessage());
             }
+        }
+        // Nếu không có Authorization token từ request hoặc session, thử lấy từ OrderEntity
+        if (!StringUtils.hasText(authHeader)) {
+            try {
+                String transactionToken = servletRequestAttributes.getRequest().getParameter("vnp_TxnRef");
+                if (transactionToken != null) {
+                    // Retrieve the token from OrderEntity using transactionToken
+                    var orderOptional = orderRepository.findByTransactionToken(transactionToken);
+                    if (orderOptional.isPresent()) {
+                        authHeader = orderOptional.get().getToken();
+                        log.info("Authorization Token retrieved from OrderEntity: {}", authHeader);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to retrieve Authorization token from OrderEntity: {}", e.getMessage());
+            }
+        }
+        // Nếu không có Authorization token từ request hoặc session, thử lấy từ OrderEntity
+        if (!StringUtils.hasText(authHeader)) {
+            try {
+                String transactionToken = servletRequestAttributes.getRequest().getParameter("orderId");
+                if (transactionToken != null) {
+                    // Retrieve the token from OrderEntity using transactionToken
+                    var orderOptional = orderRepository.findByOrderIdMomo(transactionToken);
+                    if (orderOptional.isPresent()) {
+                        authHeader = orderOptional.get().getToken();
+                        log.info("Authorization Token retrieved from OrderEntity: {}", authHeader);
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to retrieve Authorization token from OrderEntity: {}", e.getMessage());
+            }
+        }
+        // Nếu token tồn tại và bắt đầu với 'Bearer ', cắt bỏ phần tiền tố
+        if (StringUtils.hasText(authHeader)) {
+            if (authHeader.startsWith("Bearer ")) {
+                authHeader = authHeader.substring(7);
+            }
+            log.info("Final Authorization Token: {}", authHeader);
+
+            // Thêm token vào header của yêu cầu Feign
+            requestTemplate.header("Authorization", "Bearer " + authHeader);
+        } else {
+            log.warn("Authorization token not found in request or session");
         }
     }
 }

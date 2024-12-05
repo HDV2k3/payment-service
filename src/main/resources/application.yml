@@ -8,6 +8,8 @@ server:
   servlet:
     context-path: /payment
   max-http-request-header-size: 8MB
+  session:
+    timeout: 5m
   tomcat:
     threads:
       max: 200       # Số luồng xử lý tối đa
@@ -19,6 +21,8 @@ server:
 spring:
   main:
     allow-bean-definition-overriding: true
+  session:
+    store-type: redis
   jackson:
     serialization:
       indent-output: true

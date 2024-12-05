@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class MomoFacade {
     MomoService momoService;
-    public String paymentWithMomo(String amount)
+    public String paymentWithMomo(String amount,String token)
     {
-        return momoService.paymentWithMomo(amount);
+        return momoService.paymentWithMomo(amount,token);
     }
 }

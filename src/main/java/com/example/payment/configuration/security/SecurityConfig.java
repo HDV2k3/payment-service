@@ -1,5 +1,6 @@
 package com.example.payment.configuration.security;
 
+import com.example.payment.configuration.EnvConfig;
 import com.example.payment.configuration.momo.MoMoSecurity;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -123,4 +124,5 @@ public class SecurityConfig {
     public MoMoSecurity moMoSecurity() {
         return new MoMoSecurity();
     }
+
 }

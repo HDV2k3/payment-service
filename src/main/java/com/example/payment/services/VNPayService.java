@@ -3,6 +3,6 @@ package com.example.payment.services;
 import jakarta.servlet.http.HttpServletRequest;
 
 public interface VNPayService {
-    public String createOrder(HttpServletRequest request, int amount, String orderInfor, String urlReturn);
-    public int orderReturn(HttpServletRequest request);
+     String createOrder(HttpServletRequest request, String token,int amount, String orderInfor, String urlReturn);
+     int orderReturn(HttpServletRequest request);
 }
