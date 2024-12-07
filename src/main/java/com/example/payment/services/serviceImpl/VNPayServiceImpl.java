@@ -72,7 +72,6 @@ public class VNPayServiceImpl implements VNPayService {
         var user = userRepository.getMyInfo();
         order.setUserId(user.getId());
         orderRepository.save(order);
-
     }
 
     private Map<String, String> buildVnpParams(HttpServletRequest request, String transactionRef, int amount, String returnUrl) {

@@ -1,4 +1,5 @@
 package com.example.payment.services.serviceImpl;
+
 import com.example.payment.controller.dto.reponse.UserPaymentResponse;
 import com.example.payment.controller.dto.request.UserPaymentRequest;
 import com.example.payment.exception.AppException;
@@ -15,6 +16,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
+
 import java.time.Instant;
 
 @Service
@@ -104,12 +106,10 @@ public class UserPaymentServiceImpl implements UserPaymentService {
         if (orderVNPay != null) {
             Double amount = orderVNPay.getAmount();
             userPayment = updateBalance(userPayment, amount);
-            var savedUserPayment = userPaymentRepository.save(userPayment);
+            userPaymentRepository.save(userPayment);
+            orderVNPay.setStatus("SUCCESS");
+            orderRepository.save(orderVNPay);
 
-            if (savedUserPayment != null) {
-                orderVNPay.setStatus("SUCCESS");
-                orderRepository.save(orderVNPay);
-            }
         }
 
 
