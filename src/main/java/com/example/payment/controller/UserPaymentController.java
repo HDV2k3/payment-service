@@ -21,6 +21,11 @@ import org.springframework.web.bind.annotation.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserPaymentController {
     UserPaymentFacade userPaymentFacade;
+    @GetMapping("/create/{userId}")
+    public GenericApiResponse<UserPaymentResponse> created(@PathVariable(name = "userId") int userId) {
+        var userPayment = userPaymentFacade.created(userId);
+        return GenericApiResponse.success(userPayment);
+    }
     @Operation(
             summary = "Lấy cap nhap  thanh toán của người dùng",
             description = "API này trả về thông tin thanh toán hiện tại của người dùng.",
@@ -31,11 +36,7 @@ public class UserPaymentController {
         return GenericApiResponse.success(userPaymentFacade.updateUserPayment(request));
     }
 
-    @GetMapping("/create")
-    public GenericApiResponse<UserPaymentResponse> created(@PathVariable(name = "userId") int userId) {
-        var userPayment = userPaymentFacade.created(userId);
-        return GenericApiResponse.success(userPayment);
-    }
+
 
     @Operation(
             summary = "Lấy thông tin thanh toán của người dùng",
