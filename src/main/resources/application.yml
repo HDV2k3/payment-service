@@ -61,4 +61,28 @@ logging:
     root: debug
     org.apache: DEBUG
     org.springframework: DEBUG
+momo:
+  endpoint: ${MOMO_ENDPOINT}
+  partnerCode: ${MOMO_PARTNER_CODE}
+  accessKey: ${MOMO_ACCESS_KEY}
+  secretKey: ${MOMO_SECRET_KEY}
+  orderInfo: ${MOMO_ORDER_INFO}
+  returnUrl: ${MOMO_RETURN_URL}
+  notifyUrl: ${MOMO_NOTIFY_URL}
+  success: ${SUCCESS}
+  error: ${ERROR}
+
+vnpay:
+  url: ${VNP_PAY_URL}
+  returnUrl: ${VNP_RETURN_URL}
+  tmnCode: ${VNP_TMN_CODE}
+  hashSecret: ${VNP_HASH_SECRET}
+  apiUrl: ${VNP_API_URL}
+  orderInfo: ${ORDER_INFO}
+  baseUrl: ${BASE_URL}
+  success: ${SUCCESS}
+  error: ${ERROR}
+dotenv:
+  enabled: true
+
 

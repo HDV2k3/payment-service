@@ -1,6 +1,7 @@
 package com.example.payment.services.serviceImpl;
 import com.example.payment.configuration.EnvConfig;
-import com.example.payment.configuration.VNPAYConfig;
+import com.example.payment.configuration.vnpay.VNPAYConfig;
+import com.example.payment.configuration.vnpay.VnPayVariable;
 import com.example.payment.repositories.OrderRepository;
 import com.example.payment.repositories.UserRepository;
 import com.example.payment.repositories.entity.OrderEntity;
@@ -28,9 +29,7 @@ public class VNPayServiceImpl implements VNPayService {
     private static final String ORDER_TYPE = "order-type";
     private static final String LOCALE = "vn";
     private static final int EXPIRATION_MINUTES = 15;
-    private static final String SUCCESS = EnvConfig.get("SUCCESS");
-    private static final String ERROR = EnvConfig.get("ERROR");
-    private static final String ORDER_INFO = EnvConfig.get("ORDER_INFO");
+    VnPayVariable vnPayVariable;
 
     @Override
     public String createOrder(HttpServletRequest request, int amount,  String returnUrl) {
@@ -54,12 +53,12 @@ public class VNPayServiceImpl implements VNPayService {
         String calculatedHash = VNPAYConfig.hashAllFields(fields);
 
         if (!calculatedHash.equals(vnpSecureHash)) {
-            return ERROR; // Invalid signature
+            return vnPayVariable.getERROR(); // Invalid signature
         }
 
         // Check transaction status
         String transactionStatus = request.getParameter("vnp_TransactionStatus");
-        return "00".equals(transactionStatus) ? SUCCESS : ERROR; // 1 = Success, 0 = Failure
+        return "00".equals(transactionStatus) ? vnPayVariable.getSUCCESS() : vnPayVariable.getERROR(); // 1 = Success, 0 = Failure
     }
 
     private void createAndSaveOrder(int amount, String transactionRef) {
@@ -78,16 +77,16 @@ public class VNPayServiceImpl implements VNPayService {
         Map<String, String> vnpParams = new HashMap<>();
         vnpParams.put("vnp_Version", VNP_VERSION);
         vnpParams.put("vnp_Command", VNP_COMMAND);
-        vnpParams.put("vnp_TmnCode", VNPAYConfig.VNP_TMN_CODE);
+        vnpParams.put("vnp_TmnCode", vnPayVariable.getVNP_TMN_CODE());
         vnpParams.put("vnp_Amount", String.valueOf(amount * 100));
         vnpParams.put("vnp_CurrCode", VNP_CURRENCY_CODE);
         vnpParams.put("vnp_TxnRef", transactionRef);
-        vnpParams.put("vnp_OrderInfo",ORDER_INFO);
+        vnpParams.put("vnp_OrderInfo", vnPayVariable.getORDER_INFO());
         vnpParams.put("vnp_OrderType", ORDER_TYPE);
         vnpParams.put("vnp_Locale", LOCALE);
 
         // Add return URL and IP address
-        vnpParams.put("vnp_ReturnUrl", returnUrl + VNPAYConfig.VNP_RETURN_URL);
+        vnpParams.put("vnp_ReturnUrl", returnUrl + vnPayVariable.getVNP_RETURN_URL());
         vnpParams.put("vnp_IpAddr", VNPAYConfig.getIpAddress(request));
 
         // Add timestamps
@@ -122,10 +121,10 @@ public class VNPayServiceImpl implements VNPayService {
         // Remove the trailing "&" and generate the secure hash
         hashData.setLength(hashData.length() - 1); // Remove last "&"
         query.setLength(query.length() - 1); // Remove last "&"
-        String secureHash = VNPAYConfig.hmacSHA512(VNPAYConfig.VNP_HASH_SECRET, hashData.toString());
+        String secureHash = VNPAYConfig.hmacSHA512(vnPayVariable.getVNP_HASH_SECRET(), hashData.toString());
 
         // Append the secure hash to the query string
-        return VNPAYConfig.VNP_PAY_URL + "?" + query + "&vnp_SecureHash=" + secureHash;
+        return vnPayVariable.getVNP_PAY_URL() + "?" + query + "&vnp_SecureHash=" + secureHash;
     }
 
     private Map<String, String> extractRequestParams(HttpServletRequest request) {

@@ -1,5 +1,6 @@
-package com.example.payment.configuration;
+package com.example.payment.configuration.vnpay;
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
@@ -9,11 +10,8 @@ import java.util.*;
 @Component
 public class VNPAYConfig {
 
-    // Configuration constants
-    public static final String VNP_PAY_URL = EnvConfig.get("VNP_PAY_URL");
-    public static final String VNP_RETURN_URL = EnvConfig.get("VNP_RETURN_URL");
-    public static final String VNP_TMN_CODE = EnvConfig.get("VNP_TMN_CODE");
-    public static final String VNP_HASH_SECRET = EnvConfig.get("VNP_HASH_SECRET");
+        @Autowired
+        static VnPayVariable vnPayVariable;
 
     /**
      * Hashes all fields in the provided map using HMAC SHA-512.
@@ -40,7 +38,7 @@ public class VNPAYConfig {
         }
 
         // Hash the resulting string with HMAC SHA-512
-        return hmacSHA512(VNP_HASH_SECRET, sb.toString());
+        return hmacSHA512(vnPayVariable.getVNP_HASH_SECRET(), sb.toString());
     }
 
     /**

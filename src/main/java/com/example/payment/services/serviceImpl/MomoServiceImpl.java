@@ -1,6 +1,7 @@
 package com.example.payment.services.serviceImpl;
 import com.example.payment.configuration.EnvConfig;
 import com.example.payment.configuration.momo.MoMoSecurity;
+import com.example.payment.configuration.momo.MomoConfig;
 import com.example.payment.repositories.OrderRepository;
 import com.example.payment.repositories.UserPaymentRepository;
 import com.example.payment.repositories.UserRepository;
@@ -31,32 +32,26 @@ public class MomoServiceImpl implements MomoService {
     OrderRepository orderRepository;
     UserRepository userRepository;
     UserPaymentRepository userPaymentRepository;
+    MomoConfig momoConfig;
 
     @Override
     public String paymentWithMomo(String amount) {
         try {
-            // Prepare request data
-            String endpoint = EnvConfig.get("MOMO_ENDPOINT");
-            String partnerCode = EnvConfig.get("MOMO_PARTNER_CODE");
-            String accessKey = EnvConfig.get("MOMO_ACCESS_KEY");
-            String secretKey = EnvConfig.get("MOMO_SECRET_KEY");
-            String orderInfo = EnvConfig.get("MOMO_ORDER_INFO");
-            String returnUrl = EnvConfig.get("MOMO_RETURN_URL");
-            String notifyUrl = EnvConfig.get("MOMO_NOTIFY_URL");
 
+            // Prepare request data
             String orderId = generateUniqueId();
             String requestId = generateUniqueId();
             String extraData = "";
 
             // Generate the raw hash and sign it
-            String rawHash = buildRawHash(partnerCode, accessKey, requestId, amount, orderId, orderInfo, returnUrl, notifyUrl, extraData);
-            String signature = moMoSecurity.signSHA256(rawHash, secretKey);
+            String rawHash = buildRawHash(momoConfig.getPartnerCode(), momoConfig.getAccessKey(), requestId, amount, orderId, momoConfig.getOrderInfo(), momoConfig.getReturnUrl(), momoConfig.getNotifyUrl(), extraData);
+            String signature = moMoSecurity.signSHA256(rawHash, momoConfig.getSecretKey());
 
             // Build JSON request body
-            JSONObject requestBody = buildRequestBody(partnerCode, accessKey, requestId, amount, orderId, orderInfo, returnUrl, notifyUrl, extraData, signature);
+            JSONObject requestBody = buildRequestBody(momoConfig.getPartnerCode(), momoConfig.getAccessKey(), requestId, amount, orderId, momoConfig.getOrderInfo(), momoConfig.getReturnUrl(), momoConfig.getNotifyUrl(), extraData, signature);
 
             // Send payment request to MoMo
-            String responseFromMomo = sendPaymentRequest(endpoint, requestBody.toString());
+            String responseFromMomo = sendPaymentRequest(momoConfig.getEndpoint(), requestBody.toString());
 
             // Handle and parse the response
             return processMomoResponse(responseFromMomo, amount, orderId);
