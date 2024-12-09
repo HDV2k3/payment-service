@@ -28,6 +28,7 @@ public class SecurityConfig {
             "/swagger-ui/**",
             "/api-docs/**",
             "/userPayment/create/**"
+
     };
 
     // Custom JWT decoder for handling token validation and extraction
