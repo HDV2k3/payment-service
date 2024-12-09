@@ -33,20 +33,19 @@ public class UserPaymentServiceImpl implements UserPaymentService {
 
     @Override
     @Transactional
-    public UserPaymentResponse created() {
-        var user = userRepository.getMyInfo();
-        if (userPaymentRepository.existsByUserId(user.getId())) {
+    public UserPaymentResponse created(int userId) {
+
+        if (userPaymentRepository.existsByUserId(userId)) {
             throw new AppException(ErrorCode.USER_SERVICE_UNAVAILABLE);
         }
 
         var userPayment = userPaymentRepository.save(UserPaymentEntity.builder()
-                .userId(user.getId())
+                .userId(userId)
                 .balance(BALANCE)
                 .build());
         return UserPaymentResponse.builder()
                 .id(userPayment.getId())
                 .balance(userPayment.getBalance())
-                .userResponse(user)
                 .createdBy(userPayment.getCreatedBy())
                 .lastModifiedDate(userPayment.getLastModifiedDate())
                 .createDate(userPayment.getCreatedDate())

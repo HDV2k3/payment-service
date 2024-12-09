@@ -31,13 +31,10 @@ public class UserPaymentController {
     {
         return GenericApiResponse.success(userPaymentFacade.updateUserPayment(request));
     }
-    @Operation(
-            summary = "Tạo mới thông tin thanh toán của người dùng",
-            description = "API này tạo mới thông tin thanh toán cho một người dùng dựa trên request.",
-            security = {@SecurityRequirement(name = "bearerAuth")})
+
     @GetMapping("/create")
-    public GenericApiResponse<UserPaymentResponse> created() {
-        var userPayment = userPaymentFacade.created();
+    public GenericApiResponse<UserPaymentResponse> created(@PathVariable(name = "userId") int userId) {
+        var userPayment = userPaymentFacade.created(userId);
         return GenericApiResponse.success(userPayment);
     }
 

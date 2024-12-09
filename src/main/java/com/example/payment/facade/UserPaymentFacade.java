@@ -15,8 +15,8 @@ public class UserPaymentFacade {
 
     UserPaymentService userPaymentService;
 
-    public UserPaymentResponse created() {
-        return userPaymentService.created();
+    public UserPaymentResponse created(int userId) {
+        return userPaymentService.created(userId);
     }
 
     public UserPaymentResponse getUserPayment() {
