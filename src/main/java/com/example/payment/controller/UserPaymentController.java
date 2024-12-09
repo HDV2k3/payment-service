@@ -19,7 +19,6 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/userPayment")
 @RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
-@SecurityRequirement(name = "BearerAuth") // Áp dụng xác thực token
 public class UserPaymentController {
     UserPaymentFacade userPaymentFacade;
     @Operation(
