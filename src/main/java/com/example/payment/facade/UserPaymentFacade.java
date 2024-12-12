@@ -26,4 +26,10 @@ public class UserPaymentFacade {
     public UserPaymentResponse updateUserPayment(UserPaymentRequest request) {
         return userPaymentService.updateUserPayment(request);
     }
+
+    public  String minusBalance(int type,String roomId)
+    {
+        userPaymentService.minusBalance(type,roomId);
+        return "Success";
+    }
 }

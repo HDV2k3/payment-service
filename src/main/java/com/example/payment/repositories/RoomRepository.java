@@ -1,6 +1,8 @@
 package com.example.payment.repositories;
 
+import com.example.payment.controller.dto.reponse.BaseIndexResponse;
 import com.example.payment.controller.dto.reponse.GenericApiResponse;
+import com.example.payment.controller.dto.request.BaseIndexRequest;
 import com.example.payment.repositories.client.RoomClient;
 import com.example.payment.repositories.client.model.response.RoomSalePostResponse;
 import lombok.AccessLevel;
@@ -21,6 +23,14 @@ public class RoomRepository {
     public RoomSalePostResponse getRoomById(int id) {
         RoomSalePostResponse result = null;
         GenericApiResponse<RoomSalePostResponse> clientResponse = roomClient.getRoomById(id);
+        if (ObjectUtils.isNotEmpty(clientResponse)) {
+            result = clientResponse.getData();
+        }
+        return result;
+    }
+    public BaseIndexResponse featuredRoom(String roomId) {
+        BaseIndexResponse result = null;
+        GenericApiResponse<BaseIndexResponse> clientResponse = roomClient.createFeatured(roomId);
         if (ObjectUtils.isNotEmpty(clientResponse)) {
             result = clientResponse.getData();
         }

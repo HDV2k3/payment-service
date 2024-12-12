@@ -1,13 +1,16 @@
 package com.example.payment.services.serviceImpl;
 
 import com.example.payment.controller.dto.reponse.UserPaymentResponse;
+import com.example.payment.controller.dto.request.BaseIndexRequest;
 import com.example.payment.controller.dto.request.UserPaymentRequest;
 import com.example.payment.exception.AppException;
 import com.example.payment.exception.ErrorCode;
 import com.example.payment.mappers.UserPaymentMapper;
 import com.example.payment.repositories.OrderRepository;
+import com.example.payment.repositories.RoomRepository;
 import com.example.payment.repositories.UserPaymentRepository;
 import com.example.payment.repositories.UserRepository;
+import com.example.payment.repositories.entity.OrderEntity;
 import com.example.payment.repositories.entity.UserPaymentEntity;
 import com.example.payment.services.UserPaymentService;
 import jakarta.transaction.Transactional;
@@ -30,7 +33,7 @@ public class UserPaymentServiceImpl implements UserPaymentService {
     UserPaymentMapper userPaymentMapper;
     private static final double BALANCE = 0;
     OrderRepository orderRepository;
-
+    RoomRepository roomRepository;
     @Override
     @Transactional
     public UserPaymentResponse created(int userId) {
@@ -93,7 +96,7 @@ public class UserPaymentServiceImpl implements UserPaymentService {
     }
 
     @Override
-    public UserPaymentEntity updateUserBalance(String transactionToken) {
+    public void updateUserBalance(String transactionToken) {
         var user = userRepository.getMyInfo();
         var userPayment = userPaymentRepository.findByUserId(user.getId()).orElseThrow(
                 () -> new AppException(ErrorCode.USER_NOT_FOUND)
@@ -108,17 +111,51 @@ public class UserPaymentServiceImpl implements UserPaymentService {
             userPaymentRepository.save(userPayment);
             orderVNPay.setStatus("SUCCESS");
             orderRepository.save(orderVNPay);
-
         }
-
-
-        return userPayment;
     }
 
+    @Override
+    public void minusBalance(int type,String roomId) {
+        var user = userRepository.getMyInfo();
+        var userPayment = userPaymentRepository.findByUserId(user.getId()).orElseThrow(
+                () -> new AppException(ErrorCode.USER_NOT_FOUND)
+        );
+        userPayment =updateBalanceWithPackage(userPayment,type, userPayment.getUserId());
+        userPaymentRepository.save(userPayment);
+        roomRepository.featuredRoom(roomId);
+    }
     public UserPaymentEntity updateBalance(UserPaymentEntity userPaymentEntity, Double amount) {
         Double newBalance = userPaymentEntity.getBalance() + amount;
         userPaymentEntity.setBalance(newBalance);
         userPaymentEntity.setLastModifiedDate(Instant.now());
+        return userPaymentEntity;
+    }
+    public UserPaymentEntity updateBalanceWithPackage(UserPaymentEntity userPaymentEntity, int typePackage,int userId) {
+        Double amount=  0.0;
+        if (typePackage==1)
+        {
+            amount= 10000.0;
+        }
+        if (typePackage==2)
+        {
+            amount=50000.0;
+        }
+        if (typePackage==3)
+        {
+            amount=189000.0;
+        }
+        Double newBalance = userPaymentEntity.getBalance() - amount;
+        userPaymentEntity.setBalance(newBalance);
+        userPaymentEntity.setLastModifiedDate(Instant.now());
+        orderRepository.save(OrderEntity.builder()
+                .orderIdMomo("")
+                .transactionToken("")
+                .amount(amount)
+                .userId(userId)
+                .status("SUCCESS")
+                .method("ADS_FEE")
+                .build()
+        );
         return userPaymentEntity;
     }
 }

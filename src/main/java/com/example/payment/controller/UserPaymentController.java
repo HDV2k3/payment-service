@@ -46,5 +46,12 @@ public class UserPaymentController {
     public GenericApiResponse<UserPaymentResponse> getUserPayment() {
         return GenericApiResponse.success(userPaymentFacade.getUserPayment());
     }
-
+    @Operation(
+            summary = "Tru tien",
+            description = "Tru tien.",
+            security = {@SecurityRequirement(name = "bearerAuth")})
+    @GetMapping("/minusBalance")
+    public GenericApiResponse<String> minusBalance(@RequestParam int type,@RequestParam String roomId) {
+        return GenericApiResponse.success(userPaymentFacade.minusBalance(type,roomId));
+    }
 }
