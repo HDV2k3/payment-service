@@ -28,9 +28,17 @@ public class RoomRepository {
         }
         return result;
     }
-    public BaseIndexResponse featuredRoom(String roomId) {
+//    public BaseIndexResponse featuredRoom(String roomId) {
+//        BaseIndexResponse result = null;
+//        GenericApiResponse<BaseIndexResponse> clientResponse = roomClient.createFeatured(roomId);
+//        if (ObjectUtils.isNotEmpty(clientResponse)) {
+//            result = clientResponse.getData();
+//        }
+//        return result;
+//    }
+    public BaseIndexResponse featuredRoomAdsFee(int typePackage,String roomId) {
         BaseIndexResponse result = null;
-        GenericApiResponse<BaseIndexResponse> clientResponse = roomClient.createFeatured(roomId);
+        GenericApiResponse<BaseIndexResponse> clientResponse = roomClient.createFeaturedAdsFee(typePackage,roomId);
         if (ObjectUtils.isNotEmpty(clientResponse)) {
             result = clientResponse.getData();
         }

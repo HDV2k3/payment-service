@@ -122,7 +122,7 @@ public class UserPaymentServiceImpl implements UserPaymentService {
         );
         userPayment =updateBalanceWithPackage(userPayment,type, userPayment.getUserId());
         userPaymentRepository.save(userPayment);
-        roomRepository.featuredRoom(roomId);
+        roomRepository.featuredRoomAdsFee(type, roomId);
     }
     public UserPaymentEntity updateBalance(UserPaymentEntity userPaymentEntity, Double amount) {
         Double newBalance = userPaymentEntity.getBalance() + amount;

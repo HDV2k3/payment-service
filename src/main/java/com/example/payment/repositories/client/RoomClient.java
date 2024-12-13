@@ -12,6 +12,9 @@ import org.springframework.web.bind.annotation.*;
 public interface RoomClient {
     @GetMapping(value = "/marketing/post-by-id/{id}",produces = MediaType.APPLICATION_JSON_VALUE)
     GenericApiResponse<RoomSalePostResponse> getRoomById(@PathVariable("id") int id);
+//    @PostMapping("/featured/create")
+//     GenericApiResponse<BaseIndexResponse> createFeatured(@RequestParam String roomId);
+
     @PostMapping("/featured/create")
-     GenericApiResponse<BaseIndexResponse> createFeatured(@RequestParam String roomId);
+    GenericApiResponse<BaseIndexResponse> createFeaturedAdsFee(@RequestParam int typePackage,@RequestParam  String roomId);
 }
