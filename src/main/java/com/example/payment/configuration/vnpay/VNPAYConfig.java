@@ -38,7 +38,7 @@ public class VNPAYConfig {
         }
 
         // Hash the resulting string with HMAC SHA-512
-        return hmacSHA512(vnPayVariable.getVNP_HASH_SECRET(), sb.toString());
+        return hmacSHA512(vnPayVariable.getHashSecret(), sb.toString());
     }
 
     /**
