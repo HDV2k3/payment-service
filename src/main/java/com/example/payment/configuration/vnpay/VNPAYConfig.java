@@ -10,8 +10,8 @@ import java.util.*;
 @Component
 public class VNPAYConfig {
 
-        @Autowired
-        static VnPayVariable vnPayVariable;
+    @Autowired
+    static VnPayVariable vnPayVariable;
 
     /**
      * Hashes all fields in the provided map using HMAC SHA-512.
@@ -36,6 +36,7 @@ public class VNPAYConfig {
                 }
             }
         }
+
 
         // Hash the resulting string with HMAC SHA-512
         return hmacSHA512(vnPayVariable.getHashSecret(), sb.toString());

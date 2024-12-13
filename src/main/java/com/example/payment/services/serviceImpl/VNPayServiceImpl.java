@@ -1,5 +1,4 @@
 package com.example.payment.services.serviceImpl;
-import com.example.payment.configuration.EnvConfig;
 import com.example.payment.configuration.vnpay.VNPAYConfig;
 import com.example.payment.configuration.vnpay.VnPayVariable;
 import com.example.payment.repositories.OrderRepository;
@@ -29,7 +28,7 @@ public class VNPayServiceImpl implements VNPayService {
     private static final String ORDER_TYPE = "order-type";
     private static final String LOCALE = "vn";
     private static final int EXPIRATION_MINUTES = 15;
-    VnPayVariable vnPayVariable;
+    private final VnPayVariable vnPayVariable;
 
     @Override
     public String createOrder(HttpServletRequest request, int amount,  String returnUrl) {
