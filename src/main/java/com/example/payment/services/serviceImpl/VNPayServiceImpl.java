@@ -16,7 +16,6 @@ import java.text.SimpleDateFormat;
 import java.util.*;
 
 @Service
-@RequiredArgsConstructor
 @Slf4j
 public class VNPayServiceImpl implements VNPayService {
 
@@ -29,6 +28,12 @@ public class VNPayServiceImpl implements VNPayService {
     private static final String LOCALE = "vn";
     private static final int EXPIRATION_MINUTES = 15;
     private final VnPayVariable vnPayVariable;
+
+    public VNPayServiceImpl(UserRepository userRepository, OrderRepository orderRepository, VnPayVariable vnPayVariable) {
+        this.userRepository = userRepository;
+        this.orderRepository = orderRepository;
+        this.vnPayVariable = vnPayVariable;
+    }
 
     @Override
     public String createOrder(HttpServletRequest request, int amount,  String returnUrl) {

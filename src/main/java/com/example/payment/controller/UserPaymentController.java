@@ -21,6 +21,10 @@ import org.springframework.web.bind.annotation.*;
 @FieldDefaults(level = AccessLevel.PRIVATE, makeFinal = true)
 public class UserPaymentController {
     UserPaymentFacade userPaymentFacade;
+    @Operation(
+            summary = "tao vi thanh toan người dùng",
+            description = "API này tao thong tin tai khoang thanh toan của người dùng.",
+            security = {@SecurityRequirement(name = "bearerAuth")})
     @GetMapping("/create/{userId}")
     public GenericApiResponse<UserPaymentResponse> created(@PathVariable(name = "userId") int userId) {
         var userPayment = userPaymentFacade.created(userId);
