@@ -61,8 +61,9 @@ public class VNPayServiceImpl implements VNPayService {
         }
 
         // Check transaction status
-        String transactionStatus = request.getParameter("vnp_TransactionStatus");
-        return "00".equals(transactionStatus) ? vnPayVariable.getSuccess() : vnPayVariable.getError(); // 1 = Success, 0 = Failure
+//        String transactionStatus = request.getParameter("vnp_TransactionStatus");
+//        return "00".equals(transactionStatus) ? vnPayVariable.getSuccess() : vnPayVariable.getError(); // 1 = Success, 0 = Failure
+        return vnPayVariable.getSuccess();
     }
 
     private void createAndSaveOrder(int amount, String transactionRef) {
